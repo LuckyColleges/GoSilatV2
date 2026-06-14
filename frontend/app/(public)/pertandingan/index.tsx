@@ -63,10 +63,10 @@ export default function PertandinganScreen() {
   const router = useRouter()
   const { width } = useWindowDimensions()
   
-  const isMobile = width < 768
-  const COLUMN_COUNT = isMobile ? 1 : 2
-  const LIST_PADDING = 24
-  const GAP = 24
+  const isMobile = width < 768;
+  const COLUMN_COUNT = isMobile ? 1 : 2;
+  const LIST_PADDING = 24;
+  const GAP = 24;
   
   const CARD_WIDTH = (width - (LIST_PADDING * 2) - (GAP * (COLUMN_COUNT - 1))) / COLUMN_COUNT
 

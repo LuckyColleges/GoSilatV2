@@ -43,7 +43,21 @@ export default function DetailKejuaraanScreen() {
 
   const [tournament, setTournament] = useState<Tournament | null>(null)
   const [loading, setLoading] = useState(true)
-  const [modalVisible, setModalVisible] = useState(false)
+  
+  // Refactored Modal State
+  const [modal, setModal] = useState<{
+    visible: boolean
+    title: string
+    message: string
+    type: 'success' | 'error' | 'info'
+    onConfirm?: () => void
+    confirmText?: string
+  }>({
+    visible: false,
+    title: '',
+    message: '',
+    type: 'info'
+  })
 
   useEffect(() => {
     fetchTournament()
@@ -62,11 +76,40 @@ export default function DetailKejuaraanScreen() {
   }
 
   const handleDaftar = () => {
+    if (!tournament) return
+
+    // 1. Cek Login
     if (!isAuthenticated) {
-      setModalVisible(true)
+      setModal({
+        visible: true,
+        title: 'Login Diperlukan',
+        message: 'Silakan login terlebih dahulu untuk melakukan pendaftaran.',
+        type: 'info',
+        confirmText: 'Login Sekarang',
+        onConfirm: () => {
+          setModal(prev => ({ ...prev, visible: false }))
+          router.push('/(auth)/login')
+        }
+      })
       return
     }
-    router.push(`/(official)/pendaftaran/${id}`)
+
+    // 2. Cek Status Pertandingan
+    if (tournament.status === 'registration_open') {
+        router.push(`/(official)/pendaftaran/${id}`)
+    } else {
+        const isComingSoon = tournament.status === 'coming_soon'
+        const statusMsg = isComingSoon ? 'belum di buka' : 'sudah di tutup'
+        
+        setModal({
+            visible: true,
+            title: 'Pendaftaran Terkunci',
+            message: `Pendaftaran untuk pertandingan "${tournament.name}" ini ${statusMsg}. harap hubungi admin/contact person untuk informasi lebih lanjut.`,
+            type: 'info',
+            confirmText: 'Tutup',
+            onConfirm: undefined // Only show one button
+        })
+    }
   }
 
   if (loading) {
@@ -141,16 +184,13 @@ export default function DetailKejuaraanScreen() {
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
       <CustomModal
-        visible={modalVisible}
-        title="Login Diperlukan"
-        message="Silakan login terlebih dahulu untuk melakukan pendaftaran."
-        type="info"
-        onClose={() => setModalVisible(false)}
-        onConfirm={() => {
-          setModalVisible(false)
-          router.push('/(auth)/login')
-        }}
-        confirmText="Login Sekarang"
+        visible={modal.visible}
+        title={modal.title}
+        message={modal.message}
+        type={modal.type}
+        onClose={() => setModal(prev => ({ ...prev, visible: false }))}
+        onConfirm={modal.onConfirm}
+        confirmText={modal.confirmText}
       />
 
       {/* BANNER */}
