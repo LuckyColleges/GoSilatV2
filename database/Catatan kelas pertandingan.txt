@@ -1,0 +1,210 @@
+SQL SYNTAX : 
+
+
+INSERT INTO categories
+(tingkat, name, min_age, max_age, cat_type_id, gender, min_weight, max_weight)
+
+VALUES
+
+-- =========================
+-- USIA DINI 2
+-- =========================
+
+('usia_dini_2', 'Kelas A Putra', 0, 0, 1, 'male', 26, 28),
+('usia_dini_2', 'Kelas A Putri', 0, 0, 1, 'female', 26, 28),
+
+('usia_dini_2', 'Kelas B Putra', 0, 0, 1, 'male', 28, 30),
+('usia_dini_2', 'Kelas B Putri', 0, 0, 1, 'female', 28, 30),
+
+('usia_dini_2', 'Kelas C Putra', 0, 0, 1, 'male', 30, 32),
+('usia_dini_2', 'Kelas C Putri', 0, 0, 1, 'female', 30, 32),
+
+('usia_dini_2', 'Kelas D Putra', 0, 0, 1, 'male', 32, 34),
+('usia_dini_2', 'Kelas D Putri', 0, 0, 1, 'female', 32, 34),
+
+('usia_dini_2', 'Kelas E Putra', 0, 0, 1, 'male', 34, 36),
+('usia_dini_2', 'Kelas E Putri', 0, 0, 1, 'female', 34, 36),
+
+('usia_dini_2', 'Kelas F Putra', 0, 0, 1, 'male', 36, 38),
+('usia_dini_2', 'Kelas F Putri', 0, 0, 1, 'female', 36, 38),
+
+('usia_dini_2', 'Kelas G Putra', 0, 0, 1, 'male', 38, 40),
+('usia_dini_2', 'Kelas G Putri', 0, 0, 1, 'female', 38, 40),
+
+('usia_dini_2', 'Kelas H Putra', 0, 0, 1, 'male', 40, 42),
+('usia_dini_2', 'Kelas H Putri', 0, 0, 1, 'female', 40, 42),
+
+('usia_dini_2', 'Kelas I Putra', 0, 0, 1, 'male', 42, 44),
+('usia_dini_2', 'Kelas I Putri', 0, 0, 1, 'female', 42, 44),
+
+('usia_dini_2', 'Kelas J Putra', 0, 0, 1, 'male', 44, 46),
+('usia_dini_2', 'Kelas J Putri', 0, 0, 1, 'female', 44, 46),
+
+('usia_dini_2', 'Kelas K Putra', 0, 0, 1, 'male', 46, 48),
+('usia_dini_2', 'Kelas K Putri', 0, 0, 1, 'female', 46, 48),
+
+('usia_dini_2', 'Kelas L Putra', 0, 0, 1, 'male', 48, 50),
+('usia_dini_2', 'Kelas L Putri', 0, 0, 1, 'female', 48, 50),
+
+('usia_dini_2', 'Kelas M Putra', 0, 0, 1, 'male', 50, 52),
+('usia_dini_2', 'Kelas M Putri', 0, 0, 1, 'female', 50, 52),
+
+('usia_dini_2', 'Kelas N Putra', 0, 0, 1, 'male', 52, 54),
+('usia_dini_2', 'Kelas N Putri', 0, 0, 1, 'female', 52, 54),
+
+('usia_dini_2', 'Kelas O Putra', 0, 0, 1, 'male', 54, 56),
+('usia_dini_2', 'Kelas O Putri', 0, 0, 1, 'female', 54, 56),
+
+('usia_dini_2', 'Kelas P Putra', 0, 0, 1, 'male', 56, 58),
+('usia_dini_2', 'Kelas P Putri', 0, 0, 1, 'female', 56, 58),
+
+('usia_dini_2', 'Kelas Q Putra', 0, 0, 1, 'male', 58, 60),
+('usia_dini_2', 'Kelas Q Putri', 0, 0, 1, 'female', 58, 60),
+
+('usia_dini_2', 'Kelas R Putra', 0, 0, 1, 'male', 60, 62),
+('usia_dini_2', 'Kelas R Putri', 0, 0, 1, 'female', 60, 62),
+
+('usia_dini_2', 'Kelas S Putra', 0, 0, 1, 'male', 62, 64),
+('usia_dini_2', 'Kelas S Putri', 0, 0, 1, 'female', 62, 64),
+
+('usia_dini_2', 'Kelas Open Putra', 0, 0, 1, 'male', 64, 68),
+('usia_dini_2', 'Kelas Open Putri', 0, 0, 1, 'female', 64, 68),
+
+-- =========================
+-- PRA REMAJA
+-- =========================
+
+('pra_remaja', 'Kelas A Putra', 0, 0, 1, 'male', 30, 33),
+('pra_remaja', 'Kelas A Putri', 0, 0, 1, 'female', 30, 33),
+
+('pra_remaja', 'Kelas B Putra', 0, 0, 1, 'male', 33, 36),
+('pra_remaja', 'Kelas B Putri', 0, 0, 1, 'female', 33, 36),
+
+('pra_remaja', 'Kelas C Putra', 0, 0, 1, 'male', 36, 39),
+('pra_remaja', 'Kelas C Putri', 0, 0, 1, 'female', 36, 39),
+
+('pra_remaja', 'Kelas D Putra', 0, 0, 1, 'male', 39, 42),
+('pra_remaja', 'Kelas D Putri', 0, 0, 1, 'female', 39, 42),
+
+('pra_remaja', 'Kelas E Putra', 0, 0, 1, 'male', 42, 45),
+('pra_remaja', 'Kelas E Putri', 0, 0, 1, 'female', 42, 45),
+
+('pra_remaja', 'Kelas F Putra', 0, 0, 1, 'male', 45, 48),
+('pra_remaja', 'Kelas F Putri', 0, 0, 1, 'female', 45, 48),
+
+('pra_remaja', 'Kelas G Putra', 0, 0, 1, 'male', 48, 51),
+('pra_remaja', 'Kelas G Putri', 0, 0, 1, 'female', 48, 51),
+
+('pra_remaja', 'Kelas H Putra', 0, 0, 1, 'male', 51, 54),
+('pra_remaja', 'Kelas H Putri', 0, 0, 1, 'female', 51, 54),
+
+('pra_remaja', 'Kelas I Putra', 0, 0, 1, 'male', 54, 57),
+('pra_remaja', 'Kelas I Putri', 0, 0, 1, 'female', 54, 57),
+
+('pra_remaja', 'Kelas J Putra', 0, 0, 1, 'male', 57, 60),
+('pra_remaja', 'Kelas J Putri', 0, 0, 1, 'female', 57, 60),
+
+('pra_remaja', 'Kelas K Putra', 0, 0, 1, 'male', 60, 63),
+('pra_remaja', 'Kelas K Putri', 0, 0, 1, 'female', 60, 63),
+
+('pra_remaja', 'Kelas L Putra', 0, 0, 1, 'male', 63, 66),
+('pra_remaja', 'Kelas L Putri', 0, 0, 1, 'female', 63, 66),
+
+('pra_remaja', 'Kelas M Putra', 0, 0, 1, 'male', 66, 69),
+('pra_remaja', 'Kelas M Putri', 0, 0, 1, 'female', 66, 69),
+
+('pra_remaja', 'Kelas N Putra', 0, 0, 1, 'male', 69, 72),
+('pra_remaja', 'Kelas N Putri', 0, 0, 1, 'female', 69, 72),
+
+('pra_remaja', 'Kelas O Putra', 0, 0, 1, 'male', 72, 75),
+('pra_remaja', 'Kelas O Putri', 0, 0, 1, 'female', 72, 75),
+
+('pra_remaja', 'Kelas P Putra', 0, 0, 1, 'male', 75, 78),
+('pra_remaja', 'Kelas P Putri', 0, 0, 1, 'female', 75, 78),
+
+('pra_remaja', 'Kelas Open Putra', 0, 0, 1, 'male', 78, 84),
+('pra_remaja', 'Kelas Open Putri', 0, 0, 1, 'female', 78, 84);
+
+('remaja', 'Kelas <39 Putra', 0, 0, 1, 'male', 0, 39),
+('remaja', 'Kelas <39 Putri', 0, 0, 1, 'female', 0, 39),
+
+('remaja', 'Kelas A Putra', 0, 0, 1, 'male', 39, 43),
+('remaja', 'Kelas A Putri', 0, 0, 1, 'female', 39, 43),
+
+('remaja', 'Kelas B Putra', 0, 0, 1, 'male', 43, 47),
+('remaja', 'Kelas B Putri', 0, 0, 1, 'female', 43, 47),
+
+('remaja', 'Kelas C Putra', 0, 0, 1, 'male', 47, 51),
+('remaja', 'Kelas C Putri', 0, 0, 1, 'female', 47, 51),
+
+('remaja', 'Kelas D Putra', 0, 0, 1, 'male', 51, 55),
+('remaja', 'Kelas D Putri', 0, 0, 1, 'female', 51, 55),
+
+('remaja', 'Kelas E Putra', 0, 0, 1, 'male', 55, 59),
+('remaja', 'Kelas E Putri', 0, 0, 1, 'female', 55, 59),
+
+('remaja', 'Kelas F Putra', 0, 0, 1, 'male', 59, 63),
+('remaja', 'Kelas F Putri', 0, 0, 1, 'female', 59, 63),
+
+('remaja', 'Kelas G Putra', 0, 0, 1, 'male', 63, 67),
+('remaja', 'Kelas G Putri', 0, 0, 1, 'female', 63, 67),
+
+('remaja', 'Kelas H Putra', 0, 0, 1, 'male', 67, 71),
+('remaja', 'Kelas H Putri', 0, 0, 1, 'female', 67, 71),
+
+('remaja', 'Kelas I Putra', 0, 0, 1, 'male', 71, 75),
+('remaja', 'Kelas I Putri', 0, 0, 1, 'female', 71, 75),
+
+('remaja', 'Kelas J Putra', 0, 0, 1, 'male', 75, 79),
+('remaja', 'Kelas J Putri', 0, 0, 1, 'female', 75, 79),
+
+('remaja', 'Kelas K Putra', 0, 0, 1, 'male', 79, 83),
+
+('remaja', 'Kelas L Putra', 0, 0, 1, 'male', 83, 87),
+
+('remaja', 'Kelas Open 1 Putra', 0, 0, 1, 'male', 87, 100),
+('remaja', 'Kelas Open 1 Putri', 0, 0, 1, 'female', 79, 92),
+
+('remaja', 'Kelas Open 2 Putra', 0, 0, 1, 'male', 100, 999),
+('remaja', 'Kelas Open 2 Putri', 0, 0, 1, 'female', 92, 999),
+
+-- =========================
+-- DEWASA
+-- =========================
+
+('dewasa', 'Kelas <45 Putra', 0, 0, 1, 'male', 0, 45),
+('dewasa', 'Kelas <45 Putri', 0, 0, 1, 'female', 0, 45),
+
+('dewasa', 'Kelas A Putra', 0, 0, 1, 'male', 45, 50),
+('dewasa', 'Kelas A Putri', 0, 0, 1, 'female', 45, 50),
+
+('dewasa', 'Kelas B Putra', 0, 0, 1, 'male', 50, 55),
+('dewasa', 'Kelas B Putri', 0, 0, 1, 'female', 50, 55),
+
+('dewasa', 'Kelas C Putra', 0, 0, 1, 'male', 55, 60),
+('dewasa', 'Kelas C Putri', 0, 0, 1, 'female', 55, 60),
+
+('dewasa', 'Kelas D Putra', 0, 0, 1, 'male', 60, 65),
+('dewasa', 'Kelas D Putri', 0, 0, 1, 'female', 60, 65),
+
+('dewasa', 'Kelas E Putra', 0, 0, 1, 'male', 65, 70),
+('dewasa', 'Kelas E Putri', 0, 0, 1, 'female', 65, 70),
+
+('dewasa', 'Kelas F Putra', 0, 0, 1, 'male', 70, 75),
+('dewasa', 'Kelas F Putri', 0, 0, 1, 'female', 70, 75),
+
+('dewasa', 'Kelas G Putra', 0, 0, 1, 'male', 75, 80),
+('dewasa', 'Kelas G Putri', 0, 0, 1, 'female', 75, 80),
+
+('dewasa', 'Kelas H Putra', 0, 0, 1, 'male', 80, 85),
+('dewasa', 'Kelas H Putri', 0, 0, 1, 'female', 80, 85),
+
+('dewasa', 'Kelas I Putra', 0, 0, 1, 'male', 85, 90),
+
+('dewasa', 'Kelas J Putra', 0, 0, 1, 'male', 90, 95),
+
+('dewasa', 'Kelas Open 1 Putra', 0, 0, 1, 'male', 95, 110),
+('dewasa', 'Kelas Open 1 Putri', 0, 0, 1, 'female', 85, 100),
+
+('dewasa', 'Kelas Open 2 Putra', 0, 0, 1, 'male', 110, 999),
+('dewasa', 'Kelas Open 2 Putri', 0, 0, 1, 'female', 100, 999);
