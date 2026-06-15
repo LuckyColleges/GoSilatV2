@@ -31,6 +31,7 @@ interface AthleteRow {
   nik: string
   weight: string
   height: string
+  cat_type_id: string
   category_id: string
   school_name: string
 }
@@ -52,6 +53,7 @@ const EMPTY_ROW = (): AthleteRow => ({
   nik: '',
   weight: '',
   height: '',
+  cat_type_id: '1',
   category_id: '',
   school_name: '',
 })
@@ -64,6 +66,9 @@ export default function PendaftaranScreen() {
 
   // Search State
   const [searchText, setSearchText] = useState('')
+
+  // Category Types
+  const [categoryTypes, setCategoryTypes] = useState<any[]>([])
 
   // Alert Modal State
   const [alertConfig, setAlertConfig] = useState<{
@@ -114,27 +119,45 @@ export default function PendaftaranScreen() {
   const [tingkatOptions, setTingkatOptions] = useState<string[]>([])
   const [showTingkatModal, setShowTingkatModal] = useState(false)
 
-  //ambil info tur
-  const [tournament, setTournament] = useState<Tournament | null>(null)
-
   // Edit Modal State
   const [editModalVisible, setEditModalVisible] = useState(false)
-  const [editingRowIndex, setEditingRowIndex] = useState<number | null>(null)
   const [editingRowData, setEditingRowData] = useState<AthleteRow | null>(null)
 
   const [isAlreadyRegistered, setIsAlreadyRegistered] = useState(false)
+
+  // ambil info tur
+  const [tournament, setTournament] = useState<Tournament | null>(null)
+
+  const autoMatchCategory = (tingkat: string, gender: string, weight: string) => {
+    if (!weight || isNaN(parseFloat(weight))) return ''
+    const w = parseFloat(weight)
+    
+    // Filter categories by tingkat, gender, and type 'fight' (cat_type_id: 1)
+    const match = categories.find(c => 
+        c.tingkat === tingkat && 
+        c.gender === gender && 
+        Number(c.cat_type_id) === 1 &&
+        w >= parseFloat(c.min_weight) && 
+        w <= parseFloat(c.max_weight)
+    )
+    
+    return match ? String(match.id) : ''
+  }
 
   useEffect(() => {
     const initData = async () => {
       try {
         const tourRes = await tournamentService.getById(Number(eventId))
-        setTournament(tourRes || "Tunggu")
+        setTournament(tourRes || null)
 
         const categoriesRes = await tournamentService.getCategories(Number(eventId))
         setCategories(categoriesRes || [])
 
         const tingkatRes = await tournamentService.getTingkatOptions(Number(eventId))
         setTingkatOptions(tingkatRes || [])
+
+        const catTypesRes = await tournamentService.getCategoryTypes()
+        setCategoryTypes(catTypesRes || [])
 
         // CHECK IF ALREADY REGISTERED
         const existingRegRes = await registrationService.getByTournament(Number(eventId))
@@ -150,6 +173,9 @@ export default function PendaftaranScreen() {
             
             if (!grouped[tingkat]) grouped[tingkat] = []
             
+            // Find category to get its type
+            const catObj = (categoriesRes || []).find((c: any) => String(c.id) === String(reg.category_id))
+
             grouped[tingkat].push({
               id: reg.athlete_id,
               _tempId: generateId(),
@@ -158,9 +184,10 @@ export default function PendaftaranScreen() {
               birth_date: reg.birth_date,
               gender: reg.gender,
               nik: reg.nik,
-              weight: reg.weight ? reg.weight.toString() : '',
-              height: reg.height ? reg.height.toString() : '',
-              category_id: reg.category_id ? reg.category_id.toString() : '',
+              weight: reg.weight ? String(reg.weight) : '',
+              height: reg.height ? String(reg.height) : '',
+              cat_type_id: catObj ? String(catObj.cat_type_id) : '1',
+              category_id: reg.category_id ? String(reg.category_id) : '',
               school_name: reg.school_name || '',
             })
           })
@@ -208,8 +235,9 @@ export default function PendaftaranScreen() {
         nik: a.nik || '',
         weight: '',
         height: '',
+        cat_type_id: '1',
         category_id: '',
-        school_name: '',
+        school_name: a.school_name || '',
       }))
 
       setTables((prev) =>
@@ -233,7 +261,7 @@ export default function PendaftaranScreen() {
     const newTable: RegistrationTable = {
       id: generateId(),
       tingkat,
-      rows: [EMPTY_ROW()],
+      rows: [], // Start empty, must add from selection
     }
     setTables((prev) => {
       const updated = [...prev, newTable]
@@ -261,23 +289,12 @@ export default function PendaftaranScreen() {
     })
   }
 
-  const addRow = (tableIndex: number) => {
-    setTables((prev) =>
-      prev.map((table, i) =>
-        i === tableIndex
-          ? { ...table, rows: [...table.rows, EMPTY_ROW()] }
-          : table
-      )
-    )
-  }
-
   const deleteRow = (tableIndex: number, tempId: string) => {
     setTables((prev) =>
       prev.map((table, i) => {
         if (i === tableIndex) {
           const newRows = table.rows.filter((r) => r._tempId !== tempId)
-          // If it was the only row, reset it to empty instead of deleting the last row
-          return { ...table, rows: newRows.length === 0 ? [EMPTY_ROW()] : newRows }
+          return { ...table, rows: newRows }
         }
         return table
       })
@@ -317,10 +334,14 @@ export default function PendaftaranScreen() {
   const toggleSelectAthlete = (athlete: any) => {
     if (activeTableIndex === null) return
 
-    const alreadyAdded = tables[activeTableIndex].rows.some(
-      (r) => r.nik === athlete.nik
+    // CEK APAKAH ATLIT SUDAH ADA DI TABEL MANAPUN (agar tidak dobel tingkat)
+    const isAlreadyInAnyTable = tables.some(table => 
+        table.rows.some(r => r.nik === athlete.nik)
     )
-    if (alreadyAdded) return
+
+    if (isAlreadyInAnyTable) {
+        return showAlert('Gagal', `Atlit ${athlete.full_name} sudah didaftarkan pada salah satu tingkat kategori.`, 'error')
+    }
 
     const newRow: AthleteRow = {
       id: athlete.id,
@@ -332,8 +353,9 @@ export default function PendaftaranScreen() {
       nik: athlete.nik || '',
       weight: '',
       height: '',
+      cat_type_id: '1',
       category_id: '',
-      school_name: '',
+      school_name: athlete.school_name || '',
     }
 
     setTables((prev) =>
@@ -420,7 +442,7 @@ export default function PendaftaranScreen() {
       const schoolMatch = row.school_name.toLowerCase().includes(s)
       
       // Find category name
-      const category = categories.find(c => c.id.toString() === row.category_id)
+      const category = categories.find(c => String(c.id) === String(row.category_id))
       const categoryMatch = category ? category.name.toLowerCase().includes(s) : false
       
       return athleteMatch || schoolMatch || categoryMatch
@@ -478,29 +500,10 @@ export default function PendaftaranScreen() {
       <Modal visible={editModalVisible} transparent animationType="slide">
         <View style={styles.modalOverlay}>
           <View style={styles.modalBox}>
-            <Text style={styles.modalTitle}>Edit Data Atlit</Text>
+            <Text style={styles.modalTitle}>Edit Data Pendaftaran</Text>
             <ScrollView style={{ maxHeight: 400 }}>
               {editingRowData && (
                 <>
-                  <Text style={styles.inputLabel}>Nama Lengkap</Text>
-                  <TextInput
-                    style={styles.modalInput}
-                    value={editingRowData.full_name}
-                    onChangeText={(v) => setEditingRowData({ ...editingRowData, full_name: v })}
-                  />
-                  <Text style={styles.inputLabel}>NIK</Text>
-                  <TextInput
-                    style={styles.modalInput}
-                    value={editingRowData.nik}
-                    keyboardType="numeric"
-                    onChangeText={(v) => setEditingRowData({ ...editingRowData, nik: v })}
-                  />
-                  <Text style={styles.inputLabel}>Tempat Lahir</Text>
-                  <TextInput
-                    style={styles.modalInput}
-                    value={editingRowData.birth_place}
-                    onChangeText={(v) => setEditingRowData({ ...editingRowData, birth_place: v })}
-                  />
                   <Text style={styles.inputLabel}>BB (kg)</Text>
                   <TextInput
                     style={styles.modalInput}
@@ -514,12 +517,6 @@ export default function PendaftaranScreen() {
                     value={editingRowData.height}
                     keyboardType="numeric"
                     onChangeText={(v) => setEditingRowData({ ...editingRowData, height: v })}
-                  />
-                  <Text style={styles.inputLabel}>Asal Sekolah/Perguruan</Text>
-                  <TextInput
-                    style={styles.modalInput}
-                    value={editingRowData.school_name}
-                    onChangeText={(v) => setEditingRowData({ ...editingRowData, school_name: v })}
                   />
                 </>
               )}
@@ -571,7 +568,7 @@ export default function PendaftaranScreen() {
             onPress={() => setActiveTableIndex(index)}
           >
             <Text style={[styles.tabText, activeTableIndex === index && styles.activeTabText]}>
-              {table.tingkat.replace(/_/g, ' ')} ({table.rows.length})
+              {table.tingkat.replace(/_/g, ' ')}
             </Text>
             <TouchableOpacity 
               onPress={() => deleteTable(index)}
@@ -592,7 +589,7 @@ export default function PendaftaranScreen() {
                 onPress={openSelectAthletes}
               >
                 <Text style={styles.addExistingText}>
-                   + Tambahkan Atlit yang Sudah Ada
+                   + Tambahkan Atlit
                 </Text>
               </TouchableOpacity>
 
@@ -617,20 +614,32 @@ export default function PendaftaranScreen() {
               <View style={styles.tableHeader}>
                 <Text style={[styles.headerCell, styles.colNo]}>No</Text>
                 <Text style={[styles.headerCell, styles.colName]}>Nama Lengkap</Text>
-                <Text style={[styles.headerCell, styles.colCategory]}>Kategori</Text>
+                <Text style={[styles.headerCell, styles.colCatType]}>Kategori</Text>
+                <Text style={[styles.headerCell, styles.colCategory]}>Kelas</Text>
                 <Text style={[styles.headerCell, styles.colPlace]}>Tempat Lahir</Text>
                 <Text style={[styles.headerCell, styles.colDate]}>Tgl Lahir</Text>
                 <Text style={[styles.headerCell, styles.colGender]}>Gender</Text>
                 <Text style={[styles.headerCell, styles.colNik]}>NIK</Text>
-                <Text style={[styles.headerCell, styles.colWeight]}>BB</Text>
-                <Text style={[styles.headerCell, styles.colHeight]}>TB</Text>
+                <Text style={[styles.headerCell, styles.colWeight]}>BB "KG"</Text>
+                <Text style={[styles.headerCell, styles.colHeight]}>TB "CM"</Text>
                 <Text style={[styles.headerCell, styles.colSchool]}>Asal Sekolah</Text>
                 <Text style={[styles.headerCell, styles.colAction]}>Aksi</Text>
               </View>
 
               {/* TABLE BODY */}
               <ScrollView style={{ maxHeight: 350 }} showsVerticalScrollIndicator={false}>
-                {filteredRows.map((row, index) => (
+                {filteredRows.map((row, index) => {
+                  // AUTO MATCH CLASS FOR FIGHT
+                  const currentTingkat = tables[activeTableIndex!].tingkat
+                  if (row.cat_type_id === '1' && row.weight) {
+                      const matchedId = autoMatchCategory(currentTingkat, row.gender, row.weight)
+                      if (matchedId && row.category_id !== matchedId) {
+                          // Update state immediately if mismatch found
+                          setTimeout(() => updateRow(activeTableIndex!, row._tempId, 'category_id', matchedId), 0)
+                      }
+                  }
+
+                  return (
                   <View
                     key={row._tempId}
                     style={[
@@ -645,69 +654,103 @@ export default function PendaftaranScreen() {
                     <TextInput
                       placeholder="Nama..."
                       value={row.full_name}
-                      onChangeText={(v) => updateRow(activeTableIndex!, row._tempId, 'full_name', v)}
-                      style={[styles.tableInput, styles.colName]}
+                      style={[styles.tableInput, styles.colName, styles.inputReadOnly]}
+                      editable={false}
                     />
 
-                    {/* CATEGORY DROPDOWN */}
-                    <View style={[styles.colCategory]}>
+                    {/* KATEGORI (TYPE) DROPDOWN */}
+                    <View style={[styles.colCatType]}>
                       <ScrollView style={styles.catPicker}>
-                        {getFilteredCategories(tables[activeTableIndex!].tingkat, row.gender).map((cat) => (
+                        {categoryTypes.map((type) => (
                           <TouchableOpacity
-                            key={cat.id}
+                            key={type.id}
                             onPress={() => {
-                                // Toggle logic: if already selected, clear it (make it optional)
-                                const newValue = row.category_id === cat.id.toString() ? '' : cat.id.toString()
-                                updateRow(activeTableIndex!, row._tempId, 'category_id', newValue)
+                                updateRow(activeTableIndex!, row._tempId, 'cat_type_id', type.id.toString())
+                                // Clear class if changing type
+                                if (type.id.toString() !== '1') {
+                                    updateRow(activeTableIndex!, row._tempId, 'category_id', '')
+                                }
                             }}
                             style={[
                               styles.catItem,
-                              row.category_id === cat.id.toString() && styles.catItemActive
+                              row.cat_type_id === type.id.toString() && styles.catItemActive
                             ]}
                           >
-                            <Text style={[styles.catItemText, row.category_id === cat.id.toString() && styles.catItemTextActive]}>
-                              {cat.name}
+                            <Text style={[styles.catItemText, row.cat_type_id === type.id.toString() && styles.catItemTextActive]}>
+                              {type.type_name.toUpperCase()}
                             </Text>
                           </TouchableOpacity>
                         ))}
                       </ScrollView>
                     </View>
 
+                    {/* KELAS (CLASS) DROPDOWN */}
+                    <View style={[styles.colCategory]}>
+                        {String(row.cat_type_id) === '1' ? (
+                            // AUTO FILL FOR FIGHT
+                            <View style={styles.autoFilledClass}>
+                                <Text style={styles.autoFilledText}>
+                                    {categories.find(c => String(c.id) === String(row.category_id))?.name || 'Harap isi berat badan'}
+                                </Text>
+                            </View>
+                        ) : (
+                            // MANUAL FOR OTHERS
+                            <ScrollView style={styles.catPicker}>
+                                {categories
+                                    .filter(c => 
+                                        c.tingkat === currentTingkat && 
+                                        c.gender === row.gender && 
+                                        String(c.cat_type_id) === String(row.cat_type_id)
+                                    )
+                                    .map((cat) => (
+                                    <TouchableOpacity
+                                        key={cat.id}
+                                        onPress={() => {
+                                            const newValue = String(row.category_id) === String(cat.id) ? '' : String(cat.id)
+                                            updateRow(activeTableIndex!, row._tempId, 'category_id', newValue)
+                                        }}
+                                        style={[
+                                        styles.catItem,
+                                        String(row.category_id) === String(cat.id) && styles.catItemActive
+                                        ]}
+                                    >
+                                        <Text style={[styles.catItemText, String(row.category_id) === String(cat.id) && styles.catItemTextActive]}>
+                                        {cat.name}
+                                        </Text>
+                                    </TouchableOpacity>
+                                    ))}
+                            </ScrollView>
+                        )}
+                    </View>
+
                     <TextInput
                       placeholder="Kota"
                       value={row.birth_place}
-                      onChangeText={(v) => updateRow(activeTableIndex!, row._tempId, 'birth_place', v)}
-                      style={[styles.tableInput, styles.colPlace]}
+                      style={[styles.tableInput, styles.colPlace, styles.inputReadOnly]}
+                      editable={false}
                     />
 
                     <TextInput
                       placeholder="YYYY-MM-DD"
                       value={row.birth_date}
-                      onChangeText={(v) => updateRow(activeTableIndex!, row._tempId, 'birth_date', v)}
-                      style={[styles.tableInput, styles.colDate]}
+                      style={[styles.tableInput, styles.colDate, styles.inputReadOnly]}
+                      editable={false}
                     />
 
-                    <View style={[styles.genderWrapper, styles.colGender]}>
-                      <TouchableOpacity
-                        style={[styles.genderBtn, row.gender === 'male' && styles.genderMaleActive]}
-                        onPress={() => updateRow(activeTableIndex!, row._tempId, 'gender', 'male')}
-                      >
+                    <View style={[styles.genderWrapper, styles.colGender, styles.inputReadOnly]}>
+                      <View style={[styles.genderBtn, row.gender === 'male' && styles.genderMaleActive]}>
                         <Text style={[styles.genderText, row.gender === 'male' && styles.genderTextMale]}>L</Text>
-                      </TouchableOpacity>
-                      <TouchableOpacity
-                        style={[styles.genderBtn, row.gender === 'female' && styles.genderFemaleActive]}
-                        onPress={() => updateRow(activeTableIndex!, row._tempId, 'gender', 'female')}
-                      >
+                      </View>
+                      <View style={[styles.genderBtn, row.gender === 'female' && styles.genderFemaleActive]}>
                         <Text style={[styles.genderText, row.gender === 'female' && styles.genderTextFemale]}>P</Text>
-                      </TouchableOpacity>
+                      </View>
                     </View>
 
                     <TextInput
                       placeholder="NIK"
                       value={row.nik}
-                      keyboardType="numeric"
-                      onChangeText={(v) => updateRow(activeTableIndex!, row._tempId, 'nik', v)}
-                      style={[styles.tableInput, styles.colNik]}
+                      style={[styles.tableInput, styles.colNik, styles.inputReadOnly]}
+                      editable={false}
                     />
 
                     <TextInput
@@ -742,13 +785,10 @@ export default function PendaftaranScreen() {
                       </TouchableOpacity>
                     </View>
                   </View>
-                ))}
+                )})}
               </ScrollView>
             </View>
           </ScrollView>
-          <TouchableOpacity style={styles.addRowBtn} onPress={() => addRow(activeTableIndex!)}>
-            <Text style={styles.addRowText}>+ Tambah Baris</Text>
-          </TouchableOpacity>
         </View>
       ) : (
         <View style={styles.emptyTable}>
@@ -867,6 +907,7 @@ export default function PendaftaranScreen() {
 const COL = {
   no: 30,
   name: 150,
+  catType: 120,
   category: 150,
   place: 100,
   date: 100,
@@ -1078,6 +1119,7 @@ const styles = StyleSheet.create({
   },
   colNo: { width: COL.no },
   colName: { width: COL.name },
+  colCatType: { width: COL.catType, marginRight: 8 },
   colCategory: { width: COL.category, marginRight: 8 },
   colPlace: { width: COL.place },
   colDate: { width: COL.date },
@@ -1116,6 +1158,20 @@ const styles = StyleSheet.create({
     color: Colors.textLight,
     fontWeight: 'bold',
   },
+  autoFilledClass: {
+    height: 36,
+    backgroundColor: '#F0FDF4',
+    borderWidth: 1,
+    borderColor: '#86EFAC',
+    borderRadius: 6,
+    justifyContent: 'center',
+    paddingHorizontal: 8,
+  },
+  autoFilledText: {
+    fontSize: 10,
+    color: '#166534',
+    fontWeight: 'bold',
+  },
   genderWrapper: {
     flexDirection: 'row',
     gap: 4,
@@ -1135,6 +1191,10 @@ const styles = StyleSheet.create({
   genderText: { fontSize: 10, color: Colors.textSecondary },
   genderTextMale: { color: '#1D4ED8', fontWeight: 'bold' },
   genderTextFemale: { color: '#BE185D', fontWeight: 'bold' },
+  inputReadOnly: {
+    backgroundColor: '#F9FAFB',
+    color: Colors.textSecondary,
+  },
   editBtn: {
     width: 28,
     height: 28,
@@ -1157,16 +1217,6 @@ const styles = StyleSheet.create({
     borderColor: Colors.danger,
   },
   deleteIcon: { fontSize: 10 },
-  addRowBtn: {
-    padding: 12,
-    alignItems: 'center',
-    backgroundColor: Colors.backgroundSecondary,
-  },
-  addRowText: {
-    color: Colors.primary,
-    fontWeight: 'bold',
-    fontSize: 12,
-  },
   emptyTable: {
     flex: 1,
     justifyContent: 'center',

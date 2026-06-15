@@ -15,6 +15,7 @@ import {
 import { Colors } from '../../constants/colors'
 import { Tournament, TournamentStatus } from '../../types/tournament'
 import { tournamentService } from '../../services/tournamentService'
+import { adminService } from '@/services/adminService'
 import CustomModal from '../../components/ui/Modal'
 import { useRouter } from 'expo-router'
 import { Config } from '../../constants/config'
@@ -231,6 +232,8 @@ export default function ManageKejuaraanScreen() {
 
       fetchTournaments()
     } catch (error: any) {
+      console.error('Upload Error:', error)
+      console.error('Response Data:', error.response?.data)
       showAlert('Error', error.response?.data?.message || 'Gagal mengunggah file', 'error')
     } finally {
       setSubmitting(false)
@@ -303,8 +306,14 @@ export default function ManageKejuaraanScreen() {
               <TouchableOpacity style={styles.btnEdit} onPress={() => handleOpenEdit(item)}>
                 <Text style={styles.btnEditText}>✏️ Edit Detail</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={styles.btnEdit} onPress={() => showAlert('Info', 'Fitur upload pemenang segera hadir.')}>
-                <Text style={styles.btnEditText}>🏆 Upload Pemenang</Text>
+              <TouchableOpacity 
+                style={[styles.btnEdit, uploadingId === item.id && activeUploadType === 'winner' && { opacity: 0.5 }]} 
+                onPress={() => triggerFileUpload(item.id, 'winner')}
+                disabled={submitting && uploadingId === item.id}
+              >
+                <Text style={styles.btnEditText}>
+                    {uploadingId === item.id && activeUploadType === 'winner' ? '⌛ Memproses...' : '🏆 Upload Pemenang'}
+                </Text>
               </TouchableOpacity>
             </View>
             <View style={styles.actions}>

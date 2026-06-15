@@ -62,15 +62,16 @@ const ITEMS_PER_PAGE = 10
 export default function PertandinganScreen() {
   const router = useRouter()
   const { width } = useWindowDimensions()
-  
-  const isMobile = width < 768;
-  const COLUMN_COUNT = isMobile ? 1 : 2;
-  const LIST_PADDING = 24;
-  const GAP = 24;
-  
-  const CARD_WIDTH = (width - (LIST_PADDING * 2) - (GAP * (COLUMN_COUNT - 1))) / COLUMN_COUNT
+
+  const isMobile = width < 768
+  const COLUMN_COUNT = isMobile ? 1 : 3
+  const LIST_PADDING = 24
+  const GAP = 24
+
+  const cardWidth = (width - (LIST_PADDING * 2) - (GAP * (COLUMN_COUNT - 1))) / COLUMN_COUNT
 
   const [tournaments, setTournaments] =
+
     useState<Tournament[]>([])
 
   const [loading, setLoading] = useState(true)
@@ -220,17 +221,18 @@ export default function PertandinganScreen() {
             keyExtractor={(item) =>
               item.id.toString()
             }
-            numColumns={2}
-            columnWrapperStyle={{
+            numColumns={COLUMN_COUNT}
+            key={COLUMN_COUNT}
+            columnWrapperStyle={COLUMN_COUNT > 1 ? {
               justifyContent:
                 'space-between',
-            }}
+            } : null}
             contentContainerStyle={
               styles.list
             }
             renderItem={({ item }) => (
               <TouchableOpacity
-                style={[styles.card, { width: CARD_WIDTH }]}
+                style={[styles.card, { width: cardWidth }]}
                 onPress={() =>
                   router.push(
                     `/(public)/pertandingan/${item.id}`

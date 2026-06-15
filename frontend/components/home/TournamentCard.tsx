@@ -32,9 +32,9 @@ export default function TournamentCard() {
   const [loading, setLoading] = useState(true)
   const { width } = useWindowDimensions()
 
-  // Responsif: 1 kolom di HP, 2 di layar besar
+  // Responsif: 1 kolom di HP, 3 di layar besar
   const isMobile = width < 768
-  const COLUMN_COUNT = isMobile ? 1 : 2
+  const COLUMN_COUNT = isMobile ? 1 : 3
   const LIST_PADDING = 24
   const GAP = 24 // Increased from 16 for better spacing
 

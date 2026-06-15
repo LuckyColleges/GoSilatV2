@@ -85,7 +85,7 @@ export default function LoginScreen() {
         ) : null}
 
         {/* Email */}
-        <Text style={styles.label}>Email</Text>
+        <Text style={styles.label}>Username / Email</Text>
         <TextInput
           style={styles.input}
           placeholder="contoh@email.com"

@@ -35,6 +35,11 @@ export const tournamentService = {
     return response.data.data
   },
 
+  getCategoryTypes: async () => {
+    const response = await api.get('/tournaments/category-types')
+    return response.data.data
+  },
+
   create: async (data: any) => {
     const response = await api.post('/tournaments', data)
     return response.data

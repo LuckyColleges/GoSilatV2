@@ -8,7 +8,8 @@ import {
   deleteTournament,
   getCategories,
   getTingkatOptions,
-  uploadTournamentFile
+  uploadTournamentFile,
+  getCategoryTypes
 } from '../controllers/tournamentController'
 
 import {
@@ -22,6 +23,7 @@ const router = express.Router()
 
 // PUBLIC
 router.get('/', getTournaments)
+router.get('/category-types', getCategoryTypes)
 router.get('/:id', getTournamentDetail)
 router.get('/:id/categories', getCategories)
 router.get('/:id/tingkat', getTingkatOptions)

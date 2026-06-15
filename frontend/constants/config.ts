@@ -2,7 +2,7 @@ export const Config = {
   APP_NAME: 'GoSilat Indonesia Manajemen',
   APP_URL: 'https://gosilat.com',
 
-  // Ganti sesuai IP/URL backend kamu
+  // Ganti sesuai IP/URL backend kamui
   API_BASE_URL: 'http://localhost:3000/api',//TOLONG KALO BEDA WIFI / Internet GANTI PLS ini semua gara2 DHCP
 
   // Social media

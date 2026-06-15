@@ -220,6 +220,9 @@ import fs from 'fs'
  * WINNER MANAGEMENT
  */
 export const uploadWinnersExcel = async (req: Request, res: Response) => {
+  console.log('BODY:', req.body)
+  console.log('FILE:', req.file)
+
   const connection = await pool.getConnection()
   try {
     const { id: tournament_id } = req.params
@@ -254,6 +257,7 @@ export const uploadWinnersExcel = async (req: Request, res: Response) => {
     for (const row of data) {
       try {
         const nik = row.nik || row.NIK
+        const nama = row.nama || row.Nama || row.name || row.Name
         const cat_name = row.kategori || row.Kategori
         const tingkat = row.tingkat || row.Tingkat
         const gender = (row.gender || row.Gender || '').toLowerCase()
@@ -266,7 +270,7 @@ export const uploadWinnersExcel = async (req: Request, res: Response) => {
         // A. FIND ATHLETE
         const [athletes]: any = await connection.query('SELECT id FROM athletes WHERE nik = ?', [nik])
         if (athletes.length === 0) {
-          throw new Error(`Atlit dengan NIK ${nik} tidak ditemukan`)
+          throw new Error(`Atlit ${nama || ''} (NIK: ${nik}) tidak ditemukan di database master atlit`)
         }
         const athlete_id = athletes[0].id
 
@@ -276,7 +280,7 @@ export const uploadWinnersExcel = async (req: Request, res: Response) => {
           [cat_name, tingkat, gender]
         )
         if (categories.length === 0) {
-          throw new Error(`Kategori ${cat_name} (${tingkat}, ${gender}) tidak ditemukan`)
+          throw new Error(`Kategori ${cat_name} (${tingkat}, ${gender}) untuk atlit ${nama || nik} tidak ditemukan`)
         }
         const category_id = categories[0].id
 

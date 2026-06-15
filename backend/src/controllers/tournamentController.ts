@@ -478,6 +478,7 @@ export const getCategories = async (req: Request, res: Response) => {
         c.max_age,
         c.min_weight,
         c.max_weight,
+        c.cat_type_id,
         ct.type_name
       FROM categories c
       LEFT JOIN category_types ct ON c.cat_type_id = ct.id
@@ -511,6 +512,17 @@ export const getTingkatOptions = async (req: Request, res: Response) => {
     const tingkatList = rows.map((r: any) => r.cat_tingkat)
     return res.json({
       data: tingkatList
+    })
+  } catch (error) {
+    return res.status(500).json({ message: 'Server error.' })
+  }
+}
+
+export const getCategoryTypes = async (req: Request, res: Response) => {
+  try {
+    const [rows]: any = await pool.query('SELECT * FROM category_types ORDER BY id ASC')
+    return res.json({
+      data: rows
     })
   } catch (error) {
     return res.status(500).json({ message: 'Server error.' })

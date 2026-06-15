@@ -85,6 +85,7 @@ export const adminService = {
 
   uploadWinners: async (tournamentId: number, file: any) => {
     const formData = new FormData()
+    formData.append('type', 'winner')
     
     if (typeof file === 'string') {
         const filename = file.split('/').pop()
@@ -100,11 +101,7 @@ export const adminService = {
         formData.append('file', file)
     }
 
-    const response = await api.post(`/admin/tournaments/${tournamentId}/upload-winners`, formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    })
+    const response = await api.post(`/admin/tournaments/${tournamentId}/upload-winners`, formData)
     return response.data
   },
 }

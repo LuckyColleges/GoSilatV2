@@ -105,7 +105,7 @@ export default function RegisterScreen() {
         />
 
         {/* Phone */}
-        <Text style={styles.label}>No. HP (opsional)</Text>
+        <Text style={styles.label}>No. Handphone / Whastapp</Text>
         <TextInput
           style={styles.input}
           placeholder="08xxxxxxxxxx"
