@@ -231,6 +231,7 @@ export default function PertandinganScreen() {
               styles.list
             }
             renderItem={({ item }) => (
+              
               <TouchableOpacity
                 style={[styles.card, { width: cardWidth }]}
                 onPress={() =>

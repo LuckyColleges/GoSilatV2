@@ -162,9 +162,12 @@ export default function Header() {
                 </TouchableOpacity>
               ))}
               {isAuthenticated ? (
-                <TouchableOpacity onPress={handleLogout} style={styles.btnLogout}>
-                  <Text style={styles.btnText}>Logout</Text>
-                </TouchableOpacity>
+                <View style={styles.authGroup}>
+                  <TouchableOpacity onPress={handleLogout} style={styles.btnLogout}>
+                    <Text style={styles.btnText}>Logout</Text>
+                  </TouchableOpacity>
+                  <Text style={styles.welcomeText}>Hallo {user?.name} !</Text>
+                </View>
               ) : (
                 <TouchableOpacity
                   onPress={() => navTo('/(auth)/login')}
@@ -208,9 +211,12 @@ export default function Header() {
           <View style={styles.mobileDivider} />
 
           {isAuthenticated ? (
-            <TouchableOpacity style={styles.mobileLogoutBtn} onPress={handleLogout}>
-              <Text style={styles.mobileLogoutText}>Logout</Text>
-            </TouchableOpacity>
+            <View style={styles.mobileAuthGroup}>
+              <TouchableOpacity style={styles.mobileLogoutBtn} onPress={handleLogout}>
+                <Text style={styles.mobileLogoutText}>Logout</Text>
+              </TouchableOpacity>
+              <Text style={styles.mobileWelcomeText}>Hallo {user?.name} !</Text>
+            </View>
           ) : (
             <TouchableOpacity
               style={styles.mobileLoginBtn}
@@ -373,6 +379,29 @@ const styles = StyleSheet.create({
     color: Colors.danger,
     fontWeight: 'bold',
     fontSize: 14,
+  },
+  authGroup: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  welcomeText: {
+    color: Colors.textLight,
+    fontSize: 13,
+    fontWeight: '500',
+    maxWidth: 120,        // ← biar tidak terlalu panjang
+    // numberOfLines: 1,     // ← ini di JSX bukan style, skip aja
+  },
+  mobileAuthGroup: {
+    flexDirection: 'column',
+    marginVertical: 8,
+    gap: 4,
+  },
+  mobileWelcomeText: {
+    color: Colors.textLight,
+    fontSize: 13,
+    fontWeight: '500',
+    textAlign: 'center',
   },
 
 

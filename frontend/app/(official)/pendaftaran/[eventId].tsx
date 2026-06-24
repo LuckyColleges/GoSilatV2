@@ -553,7 +553,7 @@ export default function PendaftaranScreen() {
           onChangeText={setContingentName}
         />
         {isAlreadyRegistered && (
-          <Text style={{ fontSize: 11, color: Colors.orange, marginTop: 4 }}>
+          <Text style={{ fontSize: 14, color: Colors.orange, marginTop: 4 }}>
             💡 Anda sedang mengedit pendaftaran yang sudah ada.
           </Text>
         )}
@@ -845,6 +845,20 @@ export default function PendaftaranScreen() {
           {/* LIST */}
           {loadingAthletes ? (
             <ActivityIndicator color={Colors.primary} style={{ marginTop: 20 }} />
+          ) : allAthletes.length == 0 ? (
+            <View style={styles.emptyState}>
+              <Text style={styles.emptyStateIcon}>🥋</Text>
+              <Text style={styles.emptyStateTitle}>Belum Ada Data Atlit</Text>
+              <Text style={styles.emptyStateText}>
+                Kamu belum memiliki atlit. Harap membuat data atlit baru untuk mendaftarkan atlit ke pertandingan!
+              </Text>
+              <TouchableOpacity
+                style={styles.createAthleteBtn}
+                onPress={() => router.push('/(official)/mydata')}
+              >
+                <Text style={styles.createAthleteBtnText}>+ Buat Data Atlit</Text>
+              </TouchableOpacity>
+            </View>
           ) : (
             <ScrollView style={{ marginTop: 10 }}>
               {allAthletes
@@ -1317,5 +1331,41 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     borderRadius: 8,
     backgroundColor: Colors.primary,
+  },
+
+    // styling blm ad atlit ceritanya
+  emptyState: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 32,
+    gap: 12,
+  },
+  emptyStateIcon: {
+    fontSize: 48,
+  },
+  emptyStateTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: Colors.primary,
+    textAlign: 'center',
+  },
+  emptyStateText: {
+    fontSize: 14,
+    color: Colors.textSecondary,
+    textAlign: 'center',
+    lineHeight: 22,
+  },
+  createAthleteBtn: {
+    backgroundColor: Colors.orange,
+    paddingVertical: 14,
+    paddingHorizontal: 28,
+    borderRadius: 12,
+    marginTop: 8,
+  },
+  createAthleteBtnText: {
+    color: Colors.textLight,
+    fontWeight: 'bold',
+    fontSize: 15,
   },
 })

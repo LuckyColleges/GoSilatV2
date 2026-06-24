@@ -104,4 +104,23 @@ export const adminService = {
     const response = await api.post(`/admin/tournaments/${tournamentId}/upload-winners`, formData)
     return response.data
   },
+
+  getWinnersDetail: async (tournamentId: number) => {
+    const response = await api.get(`/admin/tournaments/${tournamentId}/winners-detail`)
+    return response.data
+  },
+
+  updateWinnerDetail: async (tournamentId: number, data: any) => {
+    const response = await api.put(`/admin/tournaments/${tournamentId}/winners`, data)
+    return response.data
+  },
+
+  getCategoryTypes: async () => {
+    const response = await api.get('/admin/category-types')
+    return response.data
+  },
+
+  getExportWinnersUrl: (tournamentId: number) => {
+    return `${api.defaults.baseURL}/admin/tournaments/${tournamentId}/export-winners`
+  },
 }

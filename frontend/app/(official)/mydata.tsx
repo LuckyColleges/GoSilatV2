@@ -327,6 +327,7 @@ export default function MyDataScreen() {
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>Edit Athlete</Text>
 
+            <Text style={styles.inputLabel}>Nama Lengkap</Text>
             <TextInput
               placeholder="Nama Lengkap"
               placeholderTextColor="#999"
@@ -335,6 +336,7 @@ export default function MyDataScreen() {
               onChangeText={(text) => setEditForm({ ...editForm, full_name: text })}
             />
 
+            <Text style={styles.inputLabel}>Tempat Lahir</Text>
             <TextInput
               placeholder="Tempat Lahir"
               placeholderTextColor="#999"
@@ -343,22 +345,66 @@ export default function MyDataScreen() {
               onChangeText={(text) => setEditForm({ ...editForm, birth_place: text })}
             />
 
+            <Text style={styles.inputLabel}>Tanggal lahir</Text>
             <TextInput
-              placeholder="Tanggal Lahir"
+              placeholder="Tanggal Lahir (DD-MM-YYYY)/(31-12-2001)"
               placeholderTextColor="#999"
               style={styles.modalInput}
               value={editForm.birth_date}
               onChangeText={(text) => setEditForm({ ...editForm, birth_date: text })}
             />
 
-            <TextInput
-              placeholder="Gender"
-              placeholderTextColor="#999"
-              style={styles.modalInput}
-              value={editForm.gender}
-              onChangeText={(text) => setEditForm({ ...editForm, gender: text })}
-            />
+            <Text style={styles.inputLabel}>Gender</Text>
+            <View style={styles.genderWrapper}>
+              <TouchableOpacity
+                style={[
+                  styles.genderBtn,
+                  editForm.gender === 'male' && styles.genderMaleActive
+                ]}
+                onPress={() =>
+                  setEditForm({
+                    ...editForm,
+                    gender: 'male'
+                  })
+                }
+              >
+                <Text
+                  style={[
+                    styles.genderText,
+                    editForm.gender === 'male' &&
+                      styles.genderTextMale
+                  ]}
+                >
+                  Laki-Laki
+                </Text>
+              </TouchableOpacity>
 
+              <TouchableOpacity
+                style={[
+                  styles.genderBtn,
+                  editForm.gender === 'female' &&
+                    styles.genderFemaleActive
+                ]}
+                onPress={() =>
+                  setEditForm({
+                    ...editForm,
+                    gender: 'female'
+                  })
+                }
+              >
+                <Text
+                  style={[
+                    styles.genderText,
+                    editForm.gender === 'female' &&
+                      styles.genderTextFemale
+                  ]}
+                >
+                  Perempuan
+                </Text>
+              </TouchableOpacity>
+            </View>
+              
+            <Text style={styles.inputLabel}>NIK</Text>
             <TextInput
               placeholder="NIK"
               placeholderTextColor="#999"
@@ -713,5 +759,51 @@ const styles = StyleSheet.create({
   confirmText: {
     color: Colors.textLight,
     fontWeight: 'bold',
+  },
+
+
+  // gender edit styling
+  genderWrapper: {
+    flexDirection: 'row',
+    gap: 8,
+    marginBottom: 12,
+  },
+
+  genderBtn: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    alignItems: 'center',
+  },
+
+  genderMaleActive: {
+    backgroundColor: '#DBEAFE',
+    borderColor: '#60A5FA',
+  },
+
+  genderFemaleActive: {
+    backgroundColor: '#FCE7F3',
+    borderColor: '#F472B6',
+  },
+
+  genderTextMale: {
+    color: '#1D4ED8',
+    fontWeight: 'bold',
+  },
+
+  genderTextFemale: {
+    color: '#BE185D',
+    fontWeight: 'bold',
+  },
+
+  inputLabel: {
+    fontSize: 12,
+    fontWeight: 'bold',
+    color: Colors.primary,
+    marginBottom: 4,
+    marginTop: 6,
+    textAlign: 'center'
   },
 })

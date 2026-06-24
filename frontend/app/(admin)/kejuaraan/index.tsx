@@ -12,14 +12,14 @@ import {
   Platform,
   Image,
 } from 'react-native'
-import { Colors } from '../../constants/colors'
-import { Tournament, TournamentStatus } from '../../types/tournament'
-import { tournamentService } from '../../services/tournamentService'
+import { Colors } from '@/constants/colors'
+import { Tournament, TournamentStatus } from '@/types/tournament'
+import { tournamentService } from '@/services/tournamentService'
 import { adminService } from '@/services/adminService'
-import CustomModal from '../../components/ui/Modal'
+import CustomModal from '@/components/ui/Modal'
 import { useRouter } from 'expo-router'
-import { Config } from '../../constants/config'
-import { resolveImageUrl } from '../../utils/urlResolver'
+import { Config } from '@/constants/config'
+import { resolveImageUrl } from '@/utils/urlResolver'
 
 const STATUS_COLOR: Record<string, string> = {
   coming_soon: Colors.statusComingSoon,
@@ -307,13 +307,10 @@ export default function ManageKejuaraanScreen() {
                 <Text style={styles.btnEditText}>✏️ Edit Detail</Text>
               </TouchableOpacity>
               <TouchableOpacity 
-                style={[styles.btnEdit, uploadingId === item.id && activeUploadType === 'winner' && { opacity: 0.5 }]} 
-                onPress={() => triggerFileUpload(item.id, 'winner')}
-                disabled={submitting && uploadingId === item.id}
+                style={styles.btnEdit} 
+                onPress={() => router.push(`/(admin)/kejuaraan/winner/${item.id}`)}
               >
-                <Text style={styles.btnEditText}>
-                    {uploadingId === item.id && activeUploadType === 'winner' ? '⌛ Memproses...' : '🏆 Upload Pemenang'}
-                </Text>
+                <Text style={styles.btnEditText}>🏆 Update Pemenang</Text>
               </TouchableOpacity>
             </View>
             <View style={styles.actions}>

@@ -22,6 +22,7 @@ export const getWinnersByTournament = async (req: Request, res: Response) => {
         c.name AS contingent_name,
         w.category_id,
         cat.name AS category_name,
+        cat.tingkat AS category_tingkat,
         cat.min_weight,
         cat.max_weight,
         ct.type_name AS category_type
@@ -32,7 +33,7 @@ export const getWinnersByTournament = async (req: Request, res: Response) => {
       LEFT JOIN categories cat ON w.category_id = cat.id
       LEFT JOIN category_types ct ON cat.cat_type_id = ct.id
       WHERE w.tournament_id = ?
-      ORDER BY cat.name ASC, w.rank ASC`,
+      ORDER BY cat.name ASC, w.rank IS NULL ASC, w.rank ASC`,
       [tournament_id]
     ) as any
 

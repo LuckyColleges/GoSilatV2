@@ -383,3 +383,158 @@ export const createCategory = async (req: Request, res: Response) => {
   }
 }
 
+export const getTournamentWinnersDetail = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params
+    const [rows]: any = await pool.query(
+      `SELECT 
+        r.id AS registration_id,
+        r.tournament_id,
+        r.athlete_id,
+        a.full_name AS athlete_name,
+        a.gender AS athlete_gender,
+        r.contingent_id,
+        ct.name AS contingent_name,
+        r.official_id,
+        u.name AS official_name,
+        r.category_id,
+        c.name AS category_name,
+        c.tingkat AS category_tingkat,
+        c.cat_type_id,
+        type.type_name AS category_type_name,
+        w.id AS winner_id,
+        w.rank
+      FROM registrations r
+      JOIN athletes a ON r.athlete_id = a.id
+      JOIN users u ON r.official_id = u.id
+      JOIN contingents ct ON r.contingent_id = ct.id
+      LEFT JOIN categories c ON r.category_id = c.id
+      LEFT JOIN category_types type ON c.cat_type_id = type.id
+      LEFT JOIN winners w ON w.tournament_id = r.tournament_id AND w.athlete_id = r.athlete_id AND w.category_id = r.category_id
+      WHERE r.tournament_id = ?
+      ORDER BY a.full_name ASC`,
+      [id]
+    )
+    res.json(rows)
+  } catch (err: any) {
+    res.status(500).json({ message: err.message })
+  }
+}
+
+export const updateTournamentWinner = async (req: Request, res: Response) => {
+  const connection = await pool.getConnection()
+  try {
+    const { id: tournament_id } = req.params
+    const { registration_id, athlete_id, contingent_id, category_id, rank } = req.body
+
+    await connection.beginTransaction()
+
+    // 1. Get old category_id from registrations
+    const [regs]: any = await connection.query(
+      'SELECT category_id FROM registrations WHERE id = ?',
+      [registration_id]
+    )
+    if (regs.length === 0) {
+      throw new Error('Data registrasi tidak ditemukan')
+    }
+    const old_category_id = regs[0].category_id
+
+    // 2. Update registrations table
+    await connection.query(
+      'UPDATE registrations SET category_id = ? WHERE id = ?',
+      [category_id, registration_id]
+    )
+
+    // 3. Manage winners table:
+    // Check if winner record exists for (tournament_id, athlete_id, old_category_id)
+    const [winners]: any = await connection.query(
+      'SELECT id FROM winners WHERE tournament_id = ? AND athlete_id = ? AND category_id = ?',
+      [tournament_id, athlete_id, old_category_id]
+    )
+
+    // Parse rank value: can be 1, 2, 3, or NULL. Let's make sure it is handled.
+    const rankVal = (rank === null || rank === undefined || rank === '' || String(rank).toUpperCase() === 'NULL' || rank === 'no_medal') ? null : Number(rank)
+
+    if (winners.length > 0) {
+      // Update existing winner record to the new category and rank
+      await connection.query(
+        'UPDATE winners SET category_id = ?, rank = ? WHERE id = ?',
+        [category_id, rankVal, winners[0].id]
+      )
+    } else {
+      // Insert new winner record
+      await connection.query(
+        'INSERT INTO winners (tournament_id, athlete_id, contingent_id, category_id, rank) VALUES (?, ?, ?, ?, ?)',
+        [tournament_id, athlete_id, contingent_id, category_id, rankVal]
+      )
+    }
+
+    await connection.commit()
+    res.json({ message: 'Pemenang berhasil diupdate' })
+  } catch (err: any) {
+    await connection.rollback()
+    res.status(500).json({ message: err.message })
+  } finally {
+    connection.release()
+  }
+}
+
+export const getAllCategoryTypes = async (req: Request, res: Response) => {
+  try {
+    const [rows]: any = await pool.query('SELECT * FROM category_types ORDER BY id ASC')
+    res.json(rows)
+  } catch (err: any) {
+    res.status(500).json({ message: err.message })
+  }
+}
+
+export const exportWinnersToExcel = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params
+    const query = `
+      SELECT 
+        a.nik AS 'NIK',
+        a.full_name AS 'Nama Atlit',
+        a.gender AS 'Gender',
+        ct.name AS 'Kontingen',
+        u.name AS 'Official',
+        c.tingkat AS 'Kategori Tingkat',
+        type.type_name AS 'Kategori Jenis',
+        c.name AS 'Kelas Pertandingan',
+        w.rank AS 'Juara'
+      FROM registrations r
+      JOIN athletes a ON r.athlete_id = a.id
+      JOIN users u ON r.official_id = u.id
+      JOIN contingents ct ON r.contingent_id = ct.id
+      LEFT JOIN categories c ON r.category_id = c.id
+      LEFT JOIN category_types type ON c.cat_type_id = type.id
+      LEFT JOIN winners w ON w.tournament_id = r.tournament_id AND w.athlete_id = r.athlete_id AND w.category_id = r.category_id
+      WHERE r.tournament_id = ?
+      ORDER BY ct.name ASC, c.tingkat ASC, a.full_name ASC
+    `
+    const [rows]: any = await pool.query(query, [id])
+
+    if (rows.length === 0) {
+      return res.status(404).json({ message: 'Tidak ada data registrasi / pemenang untuk diexport' })
+    }
+
+    // Format rank/juara display (e.g. convert NULL to '-' or leave it NULL/empty)
+    const formattedRows = rows.map((row: any) => ({
+      ...row,
+      'Juara': row['Juara'] === null ? '-' : `Juara ${row['Juara']}`
+    }))
+
+    const worksheet = XLSX.utils.json_to_sheet(formattedRows)
+    const workbook = XLSX.utils.book_new()
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Pemenang')
+
+    const buffer = XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' })
+
+    res.setHeader('Content-Disposition', `attachment; filename="winners_tournament_${id}.xlsx"`)
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    res.send(buffer)
+  } catch (err: any) {
+    res.status(500).json({ message: err.message })
+  }
+}
+

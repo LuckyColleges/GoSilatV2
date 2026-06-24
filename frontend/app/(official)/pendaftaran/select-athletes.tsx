@@ -29,6 +29,8 @@ export default function SelectAthletesScreen() {
       setLoading(true)
       const response = await athleteService.getMyAthletes()
       setAthletes(response.data || [])
+    console.log('response:', JSON.stringify(response))  // ← tambah ini
+    console.log('response.data:', response.data)        // ← tambah ini
     } catch (err) {
       console.error(err)
     } finally {
@@ -85,6 +87,20 @@ export default function SelectAthletesScreen() {
       {/* CONTENT */}
       {loading ? (
         <ActivityIndicator color={Colors.primary} style={{ marginTop: 40 }} />
+      ) : athletes.length == 0 ? ( 
+        <View style={styles.emptyState}>
+          <Text style={styles.emptyStateIcon}>🥋</Text>
+          <Text style={styles.emptyStateTitle}>Belum Ada Data Atlit</Text>
+          <Text style={styles.emptyStateText}>
+            Kamu belum memiliki atlit. Harap membuat data atlit baru untuk mendaftarkan atlit ke pertandingan!
+          </Text>
+          <TouchableOpacity
+            style={styles.createAthleteBtn}
+            onPress={() => router.push('/(official)/mydata')}
+          >
+            <Text style={styles.createAthleteBtnText}>+ Buat Data Atlit</Text>
+          </TouchableOpacity>
+        </View>
       ) : (
         <FlatList
           data={filteredAthletes}
@@ -240,5 +256,41 @@ const styles = StyleSheet.create({
     color: Colors.textLight,
     fontWeight: 'bold',
     fontSize: 16,
+  },
+
+  // styling blm ad atlit ceritanya
+  emptyState: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 32,
+    gap: 12,
+  },
+  emptyStateIcon: {
+    fontSize: 48,
+  },
+  emptyStateTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: Colors.primary,
+    textAlign: 'center',
+  },
+  emptyStateText: {
+    fontSize: 14,
+    color: Colors.textSecondary,
+    textAlign: 'center',
+    lineHeight: 22,
+  },
+  createAthleteBtn: {
+    backgroundColor: Colors.orange,
+    paddingVertical: 14,
+    paddingHorizontal: 28,
+    borderRadius: 12,
+    marginTop: 8,
+  },
+  createAthleteBtnText: {
+    color: Colors.textLight,
+    fontWeight: 'bold',
+    fontSize: 15,
   },
 })

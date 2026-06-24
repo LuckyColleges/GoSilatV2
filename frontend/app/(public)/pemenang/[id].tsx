@@ -37,6 +37,7 @@ export default function WinnerDetailScreen() {
   const [tournament, setTournament] = useState<Tournament | null>(null)
   const [winners, setWinners] = useState<Winner[]>([])
   const [search, setSearch] = useState('')
+  const [selectedTingkatFilter, setSelectedTingkatFilter] = useState<string>('all')
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -59,22 +60,72 @@ export default function WinnerDetailScreen() {
     fetchData()
   }, [id])
 
+  const availableTingkatFilters = useMemo(() => {
+    const options = new Set<string>()
+    winners.forEach((w) => {
+      if (w.category_tingkat) options.add(w.category_tingkat)
+    })
+    return ['all', ...Array.from(options)]
+  }, [winners])
+
   const filteredWinners = useMemo(() => {
-    return winners.filter(
+    let result = winners
+    if (selectedTingkatFilter !== 'all') {
+      result = result.filter((w) => w.category_tingkat === selectedTingkatFilter)
+    }
+    return result.filter(
       (w) =>
         w.athlete_name?.toLowerCase().includes(search.toLowerCase()) ||
         w.contingent_name?.toLowerCase().includes(search.toLowerCase()) ||
         w.category_name?.toLowerCase().includes(search.toLowerCase())
     )
-  }, [winners, search])
+  }, [winners, search, selectedTingkatFilter])
+
+  const CATEGORY_TINGKAT_OPTIONS = [
+    { label: 'Usia Dini 1', value: 'usia_dini_1' },
+    { label: 'Usia Dini 2', value: 'usia_dini_2' },
+    { label: 'Pra Remaja', value: 'pra_remaja' },
+    { label: 'Remaja', value: 'remaja' },
+    { label: 'Dewasa', value: 'dewasa' },
+  ]
+
+  const getTingkatLabel = (tingkat?: string) => {
+    if (!tingkat) return 'Tanpa Tingkat'
+    const found = CATEGORY_TINGKAT_OPTIONS.find((t) => t.value === tingkat)
+    return found ? found.label : tingkat
+  }
 
   const groupedWinners = useMemo(() => {
-    return filteredWinners.reduce((acc, winner) => {
-      const key = `${winner.category_name} (${winner.category_type})`
-      if (!acc[key]) acc[key] = []
-      acc[key].push(winner)
-      return acc
-    }, {} as Record<string, Winner[]>)
+    const groups: {
+      [tingkat: string]: {
+        [typeName: string]: {
+          [className: string]: Winner[]
+        }
+      }
+    } = {}
+
+    filteredWinners.forEach((w) => {
+      const tingkat = w.category_tingkat || 'Tanpa Tingkat'
+      const typeName = w.category_type || 'Tanpa Jenis'
+      const className = w.category_name || 'Tanpa Kelas'
+
+      if (!groups[tingkat]) groups[tingkat] = {}
+      if (!groups[tingkat][typeName]) groups[tingkat][typeName] = {}
+      if (!groups[tingkat][typeName][className]) groups[tingkat][typeName][className] = []
+
+      groups[tingkat][typeName][className].push(w)
+    })
+
+    return Object.keys(groups).map((tingkat) => ({
+      tingkat,
+      types: Object.keys(groups[tingkat]).map((typeName) => ({
+        typeName,
+        classes: Object.keys(groups[tingkat][typeName]).map((className) => ({
+          className,
+          rows: groups[tingkat][typeName][className],
+        })),
+      })),
+    }))
   }, [filteredWinners])
 
   if (loading) {
@@ -130,6 +181,31 @@ export default function WinnerDetailScreen() {
           )}
         </View>
 
+        {/* Filter Kategori Tingkat */}
+        <View style={styles.filterContainer}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterScroll}>
+            {availableTingkatFilters.map((t) => (
+              <TouchableOpacity
+                key={t}
+                style={[
+                  styles.filterPill,
+                  selectedTingkatFilter === t && styles.filterPillActive,
+                ]}
+                onPress={() => setSelectedTingkatFilter(t)}
+              >
+                <Text
+                  style={[
+                    styles.filterPillText,
+                    selectedTingkatFilter === t && styles.filterPillTextActive,
+                  ]}
+                >
+                  {t === 'all' ? 'Semua Kategori' : getTingkatLabel(t)}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </View>
+
         {/* WINNERS TABLE */}
         {filteredWinners.length === 0 ? (
           <View style={styles.emptyState}>
@@ -139,84 +215,111 @@ export default function WinnerDetailScreen() {
             </Text>
           </View>
         ) : (
-          Object.keys(groupedWinners).map((categoryKey) => (
-            <View key={categoryKey} style={styles.categoryGroup}>
-              <View style={styles.categoryHeader}>
-                <Text style={styles.categoryTitle}>{categoryKey}</Text>
+          groupedWinners.map((tingkatGroup) => (
+            <View key={tingkatGroup.tingkat} style={styles.tingkatSection}>
+              {/* 1. Header Tingkat */}
+              <View style={styles.tingkatHeader}>
+                <Text style={styles.tingkatHeaderText}>
+                  🏆 TINGKAT: {getTingkatLabel(tingkatGroup.tingkat).toUpperCase()}
+                </Text>
               </View>
 
-              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                <View>
-                  {/* TABLE HEADER */}
-                  <View style={styles.tableHeader}>
-                    <Text style={[styles.thCell, { width: 110 }]}>Rank</Text>
-                    <Text style={[styles.thCell, { width: 200 }]}>Nama Atlit</Text>
-                    <Text style={[styles.thCell, { width: 150 }]}>Kontingen</Text>
-                    <Text style={[styles.thCell, { width: 100 }]}>Gender</Text>
-                    <Text style={[styles.thCell, { width: 160 }]}>Kategori</Text>
-                    <Text style={[styles.thCell, { width: 100 }]}>Min BB</Text>
-                    <Text style={[styles.thCell, { width: 100 }]}>Max BB</Text>
-                    <Text style={[styles.thCell, { width: 130 }]}>Jenis</Text>
+              {tingkatGroup.types.map((typeGroup) => (
+                <View key={typeGroup.typeName} style={styles.typeSection}>
+                  {/* 2. Header Jenis/Type */}
+                  <View style={styles.typeHeader}>
+                    <Text style={styles.typeHeaderText}>
+                      ⚡ JENIS: {typeGroup.typeName.toUpperCase()}
+                    </Text>
                   </View>
 
-                  {/* TABLE ROWS */}
-                  {groupedWinners[categoryKey].map((winner, i) => (
-                    <View
-                      key={winner.id}
-                      style={[
-                        styles.tableRow,
-                        i % 2 === 0 && styles.tableRowAlt,
-                      ]}
-                    >
-                      <View style={[styles.tdCell, { width: 110 }]}>
-                        <View style={[
-                          styles.rankBadge,
-                          { backgroundColor: RANK_COLOR[winner.rank] ?? Colors.border }
-                        ]}>
-                          <Text style={styles.rankText}>
-                            {RANK_LABEL[winner.rank] ?? `#${winner.rank}`}
-                          </Text>
-                        </View>
+                  {typeGroup.classes.map((classGroup) => (
+                    <View key={classGroup.className} style={styles.classSection}>
+                      {/* 3. Header Kelas */}
+                      <View style={styles.classHeader}>
+                        <Text style={styles.classHeaderText}>
+                          🥋 KELAS: {classGroup.className}
+                        </Text>
                       </View>
 
-                      <Text style={[styles.tdText, { width: 200 }]}>
-                        {winner.athlete_name ?? '-'}
-                      </Text>
+                      <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                        <View style={styles.tableWrapper}>
+                          {/* TABLE HEADER */}
+                          <View style={styles.tableHeader}>
+                            <Text style={[styles.thCell, { width: 110 }]}>Rank</Text>
+                            <Text style={[styles.thCell, { width: 200 }]}>Nama Atlit</Text>
+                            <Text style={[styles.thCell, { width: 150 }]}>Kontingen</Text>
+                            <Text style={[styles.thCell, { width: 100 }]}>Gender</Text>
+                            <Text style={[styles.thCell, { width: 160 }]}>Kategori</Text>
+                            <Text style={[styles.thCell, { width: 100 }]}>Min BB</Text>
+                            <Text style={[styles.thCell, { width: 100 }]}>Max BB</Text>
+                            <Text style={[styles.thCell, { width: 130 }]}>Jenis</Text>
+                          </View>
 
-                      <Text style={[styles.tdText, { width: 150 }]}>
-                        {winner.contingent_name ?? '-'}
-                      </Text>
+                          {/* TABLE ROWS */}
+                          {classGroup.rows.map((winner, i) => (
+                            <View
+                              key={winner.id}
+                              style={[
+                                styles.tableRow,
+                                i % 2 === 0 && styles.tableRowAlt,
+                              ]}
+                            >
+                              <View style={[styles.tdCell, { width: 110 }]}>
+                                <View style={[
+                                  styles.rankBadge,
+                                  { backgroundColor: winner.rank !== null ? (RANK_COLOR[winner.rank] ?? Colors.border) : '#E5E7EB'}
+                                ]}>
+                                  <Text style={styles.rankText}>
+                                    {winner.rank == null
+                                      ? 'No Medal' 
+                                      : RANK_LABEL[winner.rank] ?? `#${winner.rank}`}
+                                  </Text>
+                                </View>
+                              </View>
 
-                      <View style={[styles.tdCell, { width: 100 }]}>
-                        <View style={[
-                          styles.genderBadge,
-                          winner.athlete_gender === 'male' ? styles.genderMale : styles.genderFemale
-                        ]}>
-                          <Text style={styles.genderText}>
-                            {winner.athlete_gender === 'male' ? '♂ L' : '♀ P'}
-                          </Text>
+                              <Text style={[styles.tdText, { width: 200 }]}>
+                                {winner.athlete_name ?? '-'}
+                              </Text>
+
+                              <Text style={[styles.tdText, { width: 150 }]}>
+                                {winner.contingent_name ?? '-'}
+                              </Text>
+
+                              <View style={[styles.tdCell, { width: 100 }]}>
+                                <View style={[
+                                  styles.genderBadge,
+                                  winner.athlete_gender === 'male' ? styles.genderMale : styles.genderFemale
+                                ]}>
+                                  <Text style={styles.genderText}>
+                                    {winner.athlete_gender === 'male' ? '♂ L' : '♀ P'}
+                                  </Text>
+                                </View>
+                              </View>
+
+                              <Text style={[styles.tdText, { width: 160 }]}>
+                                {winner.category_name ?? '-'}
+                              </Text>
+
+                              <Text style={[styles.tdText, { width: 100 }]}>
+                                {winner.min_weight ? `${winner.min_weight} kg` : '-'}
+                              </Text>
+
+                              <Text style={[styles.tdText, { width: 100 }]}>
+                                {winner.max_weight ? `${winner.max_weight} kg` : '-'}
+                              </Text>
+
+                              <Text style={[styles.tdText, { width: 130 }]}>
+                                {winner.category_type ?? '-'}
+                              </Text>
+                            </View>
+                          ))}
                         </View>
-                      </View>
-
-                      <Text style={[styles.tdText, { width: 160 }]}>
-                        {winner.category_name ?? '-'}
-                      </Text>
-
-                      <Text style={[styles.tdText, { width: 100 }]}>
-                        {winner.min_weight ? `${winner.min_weight} kg` : '-'}
-                      </Text>
-
-                      <Text style={[styles.tdText, { width: 100 }]}>
-                        {winner.max_weight ? `${winner.max_weight} kg` : '-'}
-                      </Text>
-
-                      <Text style={[styles.tdText, { width: 130 }]}>
-                        {winner.category_type ?? '-'}
-                      </Text>
+                      </ScrollView>
                     </View>
                   ))}
                 </View>
-              </ScrollView>
+              ))}
             </View>
           ))
         )}
@@ -319,22 +422,100 @@ const styles = StyleSheet.create({
     color: Colors.textSecondary,
     paddingHorizontal: 4,
   },
-  categoryGroup: {
-    marginBottom: 24,
+  filterContainer: {
+    paddingVertical: 10,
+    backgroundColor: Colors.background,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.border,
+    marginBottom: 10,
+  },
+  filterScroll: {
+    gap: 8,
+    paddingHorizontal: 4,
+  },
+  filterPill: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    backgroundColor: 'white',
     borderWidth: 1,
     borderColor: Colors.border,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  filterPillActive: {
+    backgroundColor: Colors.primary,
+    borderColor: Colors.primary,
+  },
+  filterPillText: {
+    fontSize: 12,
+    color: Colors.textSecondary,
+    fontWeight: '600',
+  },
+  filterPillTextActive: {
+    color: 'white',
+    fontWeight: 'bold',
+  },
+  tingkatSection: {
+    marginTop: 20,
+    backgroundColor: 'white',
     borderRadius: 12,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    overflow: 'hidden',
+    elevation: 2,
+    marginBottom: 16,
+  },
+  tingkatHeader: {
+    backgroundColor: Colors.primaryDark,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+  },
+  tingkatHeaderText: {
+    color: 'white',
+    fontSize: 15,
+    fontWeight: 'bold',
+  },
+  typeSection: {
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+  },
+  typeHeader: {
+    backgroundColor: Colors.backgroundSecondary,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    marginVertical: 6,
+    borderLeftWidth: 4,
+    borderLeftColor: Colors.primary,
+  },
+  typeHeaderText: {
+    color: Colors.primary,
+    fontSize: 13,
+    fontWeight: 'bold',
+  },
+  classSection: {
+    marginLeft: 8,
+    marginVertical: 10,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    borderRadius: 8,
     overflow: 'hidden',
   },
-  categoryHeader: {
-    backgroundColor: Colors.yellow,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
+  classHeader: {
+    backgroundColor: '#f1f5f9',
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.border,
   },
-  categoryTitle: {
-    fontSize: 14,
+  classHeaderText: {
+    color: Colors.text,
+    fontSize: 12,
     fontWeight: 'bold',
-    color: Colors.brown,
+  },
+  tableWrapper: {
+    flexDirection: 'column',
   },
   tableHeader: {
     flexDirection: 'row',

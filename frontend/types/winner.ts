@@ -13,4 +13,5 @@ export interface Winner {
   min_weight: number
   max_weight: number
   category_type: string
+  category_tingkat?: string
 }
