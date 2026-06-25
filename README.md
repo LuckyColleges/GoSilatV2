@@ -12,7 +12,7 @@ Clone Repository
 
 Clone repository dari GitHub:
 
-git clone <URL_REPOSITORY>
+git clone https://github.com/LuckyColleges/GoSilatV2.git
 
 
 Masuk ke folder project:
